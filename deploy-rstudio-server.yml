@@ -1,0 +1,13 @@
+---
+########################################################################
+## R and RStudio Cluster Deployment Script
+########################################################################
+
+- hosts: master
+  remote_user: root
+  strategy: debug
+  roles:
+    - ansible-r
+    - ansible-rstudio-server
+    
+

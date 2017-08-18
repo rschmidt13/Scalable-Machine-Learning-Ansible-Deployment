@@ -1,0 +1,14 @@
+[master]
+s1node0
+
+[slaves]
+s1node1
+s1node2
+s1node3
+s1node4
+s1node5
+s1node6
+s1node7
+s1node8
+
+

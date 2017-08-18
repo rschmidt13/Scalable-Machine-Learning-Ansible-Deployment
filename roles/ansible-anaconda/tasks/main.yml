@@ -1,0 +1,62 @@
+# tasks for ansible-anaconda
+---
+- name: install prerequisites...
+  become: yes
+  become_user: root
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: true
+  with_items: "{{ anaconda_dependencies }}"
+
+- name: download Anaconda installer...
+  become: yes
+  become_user: root
+  get_url:
+    url: '{{anaconda_installer_url}}'
+    dest: /tmp/{{anaconda_installer_sh}}
+    timeout: '{{anaconda_timeout_seconds}}'
+    validate_certs: false
+    mode: '0755'
+
+- name: installing Anaconda...
+  become: yes
+  become_user: root
+  command: /tmp/{{anaconda_installer_sh}} -b -p {{anaconda_parent_dir}}/{{anaconda_name}}
+  args:
+    creates: '{{anaconda_parent_dir}}/{{anaconda_name}}'
+
+- name: deleting Anaconda installer...
+  become: yes
+  become_user: root
+  when: anaconda_cleanup
+  file:
+    path: /tmp/{{anaconda_installer_sh}}
+    state: absent
+    
+- name: link anaconda...
+  become: yes
+  become_user: root
+  when: anaconda_make_link
+  file:
+    src: '{{anaconda_parent_dir}}/{{anaconda_name}}'
+    dest: '{{anaconda_parent_dir}}/anaconda{{anaconda_python_ver}}'
+    state: link
+
+- name: update conda pkgs...
+  become: yes
+  become_user: root
+  when: anaconda_pkg_update
+  command: '{{anaconda_parent_dir}}/{{anaconda_name}}/bin/conda update -y --all'
+  
+- name: make system default python etc...
+  become: yes
+  become_user: root
+  when: anaconda_make_sys_default and anaconda_make_link
+  with_items:
+    - etc/profile.d/anaconda.sh
+  template:
+    src: '{{item}}.j2'
+    dest: /{{item}}
+    mode: '0644'
+    

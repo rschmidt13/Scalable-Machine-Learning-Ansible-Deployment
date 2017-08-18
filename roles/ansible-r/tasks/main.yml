@@ -1,0 +1,27 @@
+# tasks file for ansible-r
+---
+- name: add public key for apt...
+  become: yes
+  become_user: root
+  apt_key:
+    id: 6212B7B7931C4BB16280BA1306F90DE5381BA480
+    keyserver: keys.gnupg.net
+    state: present
+
+- name: add CRAN repository...
+  become: yes
+  become_user: root
+  apt_repository:
+    repo: "{{ item.type }} {{ item.url }}"
+    state: present
+    update_cache: true
+  with_items: "{{ r_repository }}"
+
+- name: install apt packages for R base and recommended...
+  become: yes
+  become_user: root
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: true
+  with_items: "{{ r_dependencies }}"

@@ -1,0 +1,9 @@
+# vars file for ansible-r
+---
+
+# watch it, the following line is currently specific to debian jessie. The problem is the "-cran3" appendix
+# at the end of the url. This is wrong as soon as Ubuntu or even another debian version is used...
+
+r_repository:
+  - type: deb
+    url: '{{ r_cran_mirror }}/bin/linux/{{ ansible_distribution|lower }} {{ansible_distribution_release }}-cran3/'

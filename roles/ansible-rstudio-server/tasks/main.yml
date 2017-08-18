@@ -1,0 +1,71 @@
+# tasks for ansible-rstudio-server
+---
+- name: install depedencies for Rstudio Server...
+  become: yes
+  become_user: root
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: true
+  with_items: "{{ rstudio_server_dependencies }}"
+
+- name: create (download) directory...
+  become: yes
+  become_user: root
+  file:
+    path: "{{ rstudio_server_downloads_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: download RStudio package...
+  become: yes
+  become_user: root
+  get_url:
+    url: 'https://download2.rstudio.org/rstudio-server-{{ rstudio_server_version }}-{{ rstudio_server_machine_map[ansible_machine] }}.deb'
+    dest: '{{ rstudio_server_downloads_path }}/rstudio-server_{{ rstudio_server_version }}_{{ rstudio_server_machine_map[ansible_machine] }}.deb'
+    timeout: '{{rstudio_server_timeout_seconds}}'
+    mode: '0755'
+
+- name: install RStudio package...
+  apt:
+    deb: "{{ rstudio_server_downloads_path }}/rstudio-server_{{ rstudio_server_version }}_{{ rstudio_server_machine_map[ansible_machine] }}.deb"
+
+- name: deleting Rstudio package installer...
+  become: yes
+  become_user: root
+  when: rstudio_server_download_cleanup
+  file:
+    path: "{{ rstudio_server_downloads_path }}/rstudio-server_{{ rstudio_server_version }}_{{ rstudio_server_machine_map[ansible_machine] }}.deb"
+    state: absent
+    
+- name: update (server) configuration file...
+  become: yes
+  become_user: root
+  template:
+    src: etc/rstudio/rserver.conf.j2
+    dest: /etc/rstudio/rserver.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart rstudio-server
+
+- name: update (session) configuration file...
+  become: yes
+  become_user: root
+  template:
+    src: etc/rstudio/rsession.conf.j2
+    dest: /etc/rstudio/rsession.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart rstudio-server
+
+- name: start and enable service
+  become: yes
+  become_user: root
+  service:
+    name: rstudio-server
+    state: started
+    enabled: true

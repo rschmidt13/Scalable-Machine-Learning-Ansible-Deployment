@@ -1,0 +1,12 @@
+########################################################################
+## Data Science Deployment Script
+########################################################################
+
+- hosts: s1node4
+  remote_user: root
+  strategy: debug
+  roles:
+    - { role: ansible-anaconda, anaconda_python_ver: 2, anaconda_make_link: True, anaconda_make_sys_default: True }
+    - { role: ansible-anaconda, anaconda_python_ver: 3, anaconda_make_link: True, anaconda_make_sys_default: False } 
+    - ansible-r
+    - ansible-rstudio-server

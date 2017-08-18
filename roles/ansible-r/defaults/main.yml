@@ -1,0 +1,9 @@
+# defaults file for ansible-r
+---
+
+r_cran_mirror: http://cran.rstudio.com/
+
+r_dependencies:
+  - r-base
+  - r-base-dev
+  - r-recommended
